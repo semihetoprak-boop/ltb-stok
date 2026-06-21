@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>LTB Stok</title>
+
+<script src="https://unpkg.com/@zxing/browser@latest"></script>
+
+<style>
+
+body{
+font-family:-apple-system,sans-serif;
+background:#f3f4f6;
+padding:15px;
+margin:0;
+}
+
+.card{
+background:white;
+border-radius:20px;
+padding:20px;
+box-shadow:0 2px 15px rgba(0,0,0,.1);
+}
+
+h2{
+text-align:center;
+}
+
+select,input,button{
+width:100%;
+height:52px;
+margin-top:10px;
+border-radius:12px;
+border:1px solid #ddd;
+padding:0 15px;
+font-size:16px;
+box-sizing:border-box;
+}
+
+button{
+border:none;
+font-weight:bold;
+color:white;
+}
+
+.camera{
+background:#2563eb;
+}
+
+.search{
+background:#111827;
+}
+
+video{
+width:100%;
+margin-top:15px;
+border-radius:15px;
+display:none;
+}
+
+.result{
+margin-top:15px;
+}
+
+.stockCard{
+background:white;
+padding:12px;
+margin-top:10px;
+border-radius:12px;
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>📦 LTB Stok</h2>
+
+<select id="magaza">
+<option value="ALL">Tüm Mağazalar</option>
+</select>
+
+<input
+id="barkod"
+placeholder="Barkod gir">
+
+<button class="camera" onclick="kameraAc()">
+📷 Barkod Oku
+</button>
+
+<video id="video"></video>
+
+<button class="search" onclick="ara()">
+🔍 Stok Sorgula
+</button>
+
+<div id="sonuc" class="result"></div>
+
+</div>
+
+<script>
+
+const API =
+"https://script.google.com/macros/s/AKfycbyMP0LFdbZD3P_q5ErjrLYiYAW7-2CALsZhOxrf8gByxYrNxuchX2uMRv74QTXfBGbW/exec";
+
+window.onload = async () => {
+
+try{
+
+const res =
+await fetch(API + "?action=stores");
+
+const stores =
+await res.json();
+
+const select =
+document.getElementById("magaza");
+
+stores.forEach(m=>{
+
+const o =
+document.createElement("option");
+
+o.value=m.kod;
+o.textContent=m.ad;
+
+select.appendChild(o);
+
+});
+
+}catch(e){
+
+console.log(e);
+
+}
+
+};
+
+async function ara(){
+
+const barkod =
+document.getElementById("barkod").value;
+
+const magaza =
+document.getElementById("magaza").value;
+
+const res =
+await fetch(
+API+
+"?barkod="+encodeURIComponent(barkod)+
+"&magaza="+encodeURIComponent(magaza)
+);
+
+const data =
+await res.json();
+
+goster(data);
+
+}
+
+function goster(data){
+
+const div =
+document.getElementById("sonuc");
+
+if(!data.length){
+
+div.innerHTML=
+"<h3>Ürün bulunamadı</h3>";
+
+return;
+
+}
+
+let toplam=0;
+
+data.forEach(x=>{
+toplam+=Number(x.stok);
+});
+
+let html=`
+<div class="stockCard">
+<h3>${data[0].urunAdi}</h3>
+<p>🧺 ${data[0].yikama}</p>
+<p>📦 Toplam Stok: ${toplam}</p>
+</div>
+`;
+
+data.forEach(x=>{
+
+html+=`
+<div class="stockCard">
+🏬 ${x.magazaAdi}<br>
+🎨 ${x.renkKodu}<br>
+📏 ${x.beden}<br>
+📦 ${x.stok}
+</div>
+`;
+
+});
+
+div.innerHTML=html;
+
+}
+
+async function kameraAc(){
+
+const video =
+document.getElementById("video");
+
+video.style.display="block";
+
+const stream =
+await navigator.mediaDevices.getUserMedia({
+video:{
+facingMode:"environment"
+}
+});
+
+video.srcObject=stream;
+
+video.play();
+
+const codeReader =
+new ZXing.BrowserMultiFormatReader();
+
+codeReader.decodeFromVideoDevice(
+null,
+'video',
+(result)=>{
+
+if(result){
+
+document.getElementById("barkod").value =
+result.text;
+
+stream.getTracks().forEach(
+track=>track.stop()
+);
+
+video.style.display="none";
+
+ara();
+
+}
+
+}
+);
+
+}
+
+</script>
+
+</body>
+</html>
