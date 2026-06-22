@@ -105,39 +105,52 @@ placeholder="Barkod gir">
 
 <script>
 
-const API =
-"https://script.google.com/macros/s/AKfycbw5GUqB6p2qYZC1Tdfts-XtXUq5VZDOMxnuZGSz32SsQC2b38jGYqgSy0fdt94ZNF2m/exec";
+const SUPABASE_URL =
+"https://rpnxtldxrvolndguhdgb.supabase.co/rest/v1/stoklar";
+
+const API_KEY =
+"sb_publishable_6oeVYYPtD4R90jRIjq4PCg_2Vgs0qk6";
   
 window.onload = async () => {
 
 try{
 
-const res =
-await fetch(API + "?action=magazalar");
+const res = await fetch(
+SUPABASE_URL +
+"?select=Mağaza%20Kodu,Mağaza%20Adı",
+{
+headers:{
+apikey:API_KEY
+}
+});
 
-const stores =
-await res.json();
+const rows = await res.json();
+
+const magazalar = {};
+
+rows.forEach(r=>{
+magazalar[r["Mağaza Kodu"]] =
+r["Mağaza Adı"];
+});
 
 const select =
 document.getElementById("magaza");
 
-stores.forEach(m=>{
+Object.keys(magazalar).forEach(k=>{
 
 const o =
 document.createElement("option");
 
-o.value=m.kod;
-o.textContent=m.ad;
+o.value = k;
+o.textContent = magazalar[k];
 
 select.appendChild(o);
 
 });
 
 }catch(e){
-  
-  alert(e);
 
-console.log(e);
+alert(JSON.stringify(e));
 
 }
 
@@ -151,17 +164,42 @@ document.getElementById("barkod").value;
 const magaza =
 document.getElementById("magaza").value;
 
-const res =
-await fetch(
-API+
-"?barkod="+encodeURIComponent(barkod)+
-"&magaza="+encodeURIComponent(magaza)
-);
+let url =
+SUPABASE_URL +
+"?Barkod=eq." + barkod;
 
-const data =
+const res =
+await fetch(url,{
+headers:{
+apikey:API_KEY
+}
+});
+
+let data =
 await res.json();
 
-goster(data);
+if(magaza !== "ALL"){
+
+data =
+data.filter(
+x => x["Mağaza Kodu"] == magaza
+);
+
+}
+
+const sonuc =
+data.map(x=>({
+
+magazaAdi:x["Mağaza Adı"],
+urunAdi:x["Ürün Adı"],
+renkKodu:x["Renk Kodu"],
+beden:x["Beden"],
+stok:x["Envanter"],
+yikama:x["YIKAMA Açıklama"]
+
+}));
+
+goster(sonuc);
 
 }
 
