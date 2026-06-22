@@ -217,9 +217,12 @@ document.getElementById("video");
 
 video.style.display="block";
 
-const stream = await navigator.mediaDevices.getUserMedia({
+const stream =
+await navigator.mediaDevices.getUserMedia({
   video:{
-    facingMode:{ exact:"environment" }
+    facingMode:{
+      exact:"environment"
+    }
   },
   audio:false
 });
