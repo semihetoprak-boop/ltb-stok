@@ -219,9 +219,8 @@ video.style.display="block";
 
 const stream =
 await navigator.mediaDevices.getUserMedia({
-video:{
-facingMode:"environment"
-}
+ video:true,
+ audio:false
 });
 
 video.srcObject=stream;
