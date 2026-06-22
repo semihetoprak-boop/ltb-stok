@@ -59,7 +59,19 @@ margin-top:15px;
 border-radius:15px;
 display:none;
 }
+#reader{
+width:100%;
+min-height:300px;
+margin-top:15px;
+overflow:hidden;
+position:relative;
+}
 
+#reader video{
+width:100%;
+height:auto;
+border-radius:15px;
+}
 .result{
 margin-top:15px;
 }
@@ -249,27 +261,24 @@ div.innerHTML=html;
 }
 
 async function kameraAc(){
-alert("BarcodeDetector" in window);
+
 const reader = document.getElementById("reader");
 
 reader.innerHTML = "";
 
+Quagga.stop();
+
 Quagga.init({
 inputStream:{
-name:"Live",
 type:"LiveStream",
-target:reader,
+target:document.querySelector("#reader"),
 constraints:{
-facingMode:"environment",
-width:{min:640},
-height:{min:480}
+facingMode:"environment"
 }
 },
 decoder:{
 readers:[
-"ean_reader",
-"ean_8_reader",
-"code_128_reader"
+"ean_reader"
 ]
 }
 },
@@ -277,13 +286,15 @@ function(err){
 
 if(err){
 console.log(err);
-alert("Kamera başlatılamadı");
+alert(JSON.stringify(err));
 return;
 }
 
 Quagga.start();
 
 });
+
+Quagga.offDetected();
 
 Quagga.onDetected(function(result){
 
@@ -292,6 +303,8 @@ const barkod = result.codeResult.code;
 document.getElementById("barkod").value = barkod;
 
 Quagga.stop();
+
+reader.innerHTML = "";
 
 ara();
 
