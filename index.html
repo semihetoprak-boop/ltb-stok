@@ -6,8 +6,8 @@
 
 <title>LTB Stok</title>
 
-<script src="https://unpkg.com/@zxing/browser@latest"></script>
-
+<script src="https://unpkg.com/html5-qrcode"></script>
+  
 <style>
 
 body{
@@ -93,7 +93,7 @@ placeholder="Barkod gir">
 📷 Barkod Oku
 </button>
 
-<video id="video"></video>
+<div id="reader"></div>
 
 <button class="search" onclick="ara()">
 🔍 Stok Sorgula
@@ -250,49 +250,43 @@ div.innerHTML=html;
 
 async function kameraAc(){
 
-const video =
-document.getElementById("video");
+const reader =
+document.getElementById("reader");
 
-video.style.display="block";
+reader.style.display = "block";
 
-const stream =
-await navigator.mediaDevices.getUserMedia({
-  video:{
-    facingMode:{
-      exact:"environment"
-    }
-  },
-  audio:false
-});
+const html5QrCode =
+new Html5Qrcode("reader");
 
-video.srcObject=stream;
+try{
 
-video.play();
-
-const codeReader =
-new ZXing.BrowserMultiFormatReader();
-codeReader.timeBetweenScansMillis = 200;
-codeReader.decodeFromConstraints(
+await html5QrCode.start(
 {
-video:{
 facingMode:"environment"
-}
 },
-"video",
-(result,err)=>{
-
-if(result){
+{
+fps:10,
+qrbox:250
+},
+(decodedText)=>{
 
 document.getElementById("barkod").value =
-result.text;
+decodedText;
 
-stream.getTracks().forEach(
-track=>track.stop()
-);
-
-video.style.display="none";
+html5QrCode.stop();
 
 ara();
+
+}
+);
+
+}catch(e){
+
+alert("Kamera başlatılamadı");
+
+console.log(e);
+
+}
 
 }
 
