@@ -6,7 +6,7 @@
 
 <title>LTB Stok</title>
 
-<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/@ericblade/quagga2/dist/quagga.min.js"></script>
   
 <style>
 
@@ -250,33 +250,52 @@ div.innerHTML=html;
 
 async function kameraAc(){
 
-const html5QrCode = new Html5Qrcode("reader");
+const reader = document.getElementById("reader");
 
-try{
+reader.innerHTML = "";
 
-await html5QrCode.start(
-{ facingMode: "environment" },
-{
-fps: 5,
-qrbox: false
+Quagga.init({
+inputStream:{
+name:"Live",
+type:"LiveStream",
+target:reader,
+constraints:{
+facingMode:"environment",
+width:{min:640},
+height:{min:480}
+}
 },
-(decodedText)=>{
+decoder:{
+readers:[
+"ean_reader",
+"ean_8_reader",
+"code_128_reader"
+]
+}
+},
+function(err){
 
-document.getElementById("barkod").value = decodedText;
+if(err){
+console.log(err);
+alert("Kamera başlatılamadı");
+return;
+}
 
-html5QrCode.stop();
+Quagga.start();
+
+});
+
+Quagga.onDetected(function(result){
+
+const barkod = result.codeResult.code;
+
+document.getElementById("barkod").value = barkod;
+
+Quagga.stop();
 
 ara();
 
-}
-);
-
-}catch(err){
-
-console.log(err);
-alert("Kamera başlatılamadı");
-
-}
+});
 
 }
 
