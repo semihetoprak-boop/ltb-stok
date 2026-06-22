@@ -233,11 +233,15 @@ video.play();
 
 const codeReader =
 new ZXing.BrowserMultiFormatReader();
-
-codeReader.decodeFromVideoDevice(
-null,
-'video',
-(result)=>{
+codeReader.timeBetweenScansMillis = 200;
+codeReader.decodeFromConstraints(
+{
+video:{
+facingMode:"environment"
+}
+},
+"video",
+(result,err)=>{
 
 if(result){
 
