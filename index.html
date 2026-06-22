@@ -117,7 +117,7 @@ try{
 
 const res = await fetch(
 SUPABASE_URL +
-"?select=Mağaza%20Kodu,Mağaza%20Adı",
+"?select=*",
 {
 headers:{
 apikey:API_KEY
@@ -126,11 +126,15 @@ apikey:API_KEY
 
 const rows = await res.json();
 
+console.log(rows[0]);
+
 const magazalar = {};
 
 rows.forEach(r=>{
+
 magazalar[r["Mağaza Kodu"]] =
 r["Mağaza Adı"];
+
 });
 
 const select =
@@ -150,7 +154,8 @@ select.appendChild(o);
 
 }catch(e){
 
-alert(JSON.stringify(e));
+alert("Mağazalar yüklenemedi");
+console.log(e);
 
 }
 
@@ -159,36 +164,31 @@ alert(JSON.stringify(e));
 async function ara(){
 
 const barkod =
-document.getElementById("barkod").value;
+document.getElementById("barkod").value.trim();
 
 const magaza =
 document.getElementById("magaza").value;
 
-let url =
+let res = await fetch(
 SUPABASE_URL +
-"?Barkod=eq." + barkod;
-
-const res =
-await fetch(url,{
+"?Barkod=eq." + encodeURIComponent(barkod),
+{
 headers:{
 apikey:API_KEY
 }
 });
 
-let data =
-await res.json();
+let data = await res.json();
 
 if(magaza !== "ALL"){
 
-data =
-data.filter(
+data = data.filter(
 x => x["Mağaza Kodu"] == magaza
 );
 
 }
 
-const sonuc =
-data.map(x=>({
+const sonuc = data.map(x=>({
 
 magazaAdi:x["Mağaza Adı"],
 urunAdi:x["Ürün Adı"],
